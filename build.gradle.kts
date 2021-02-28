@@ -1,41 +1,54 @@
-plugins {
-    kotlin("jvm") version "1.4.31"
-}
-
 // https://github.com/Kotlin/kotlinx.atomicfu#jvm
 buildscript {
     dependencies {
-        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:0.15.1")
+        classpath("org.jetbrains.kotlinx:atomicfu-gradle-plugin:${Versions.ATOMIC_FU}")
     }
 }
 
-apply {
-    plugin("kotlinx-atomicfu")
+plugins {
+    idea
+    java
+    kotlin("jvm") version Versions.KOTLIN apply false
 }
 
-group = "org.example"
-version = "1.0-SNAPSHOT"
+allprojects {
+    group = "org.example"
+    version = "1.0-SNAPSHOT"
 
-repositories {
-    mavenCentral()
+    repositories {
+        mavenCentral()
+    }
 }
 
-dependencies {
-    implementation(kotlin("stdlib"))
-    implementation("org.jetbrains.kotlinx:lincheck:2.12")
-    implementation("org.assertj:assertj-core:3.11.1")
-    testImplementation(platform("org.junit:junit-bom:5.7.1"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-}
+subprojects {
+    apply {
+        plugin("idea")
+        plugin("java")
+        plugin("org.jetbrains.kotlin.jvm")
+    }
 
-tasks.test {
-    // https://github.com/Kotlin/kotlinx-lincheck#java-9-support
-    jvmArgs(
-        "--add-opens", "java.base/jdk.internal.misc=ALL-UNNAMED",
-        "--add-exports", "java.base/jdk.internal.util=ALL-UNNAMED"
-    )
-    useJUnitPlatform()
-    testLogging {
-        events("passed", "skipped", "failed")
+    dependencies {
+        // kotlin
+        implementation(kotlin("stdlib"))
+
+        // lincheck
+        implementation("org.jetbrains.kotlinx:lincheck:${Versions.LINCHECK}")
+
+        // test
+        implementation("org.assertj:assertj-core:3.11.1")
+        testImplementation(platform("org.junit:junit-bom:5.7.1"))
+        testImplementation("org.junit.jupiter:junit-jupiter")
+    }
+
+    tasks.withType<Test> {
+        // https://github.com/Kotlin/kotlinx-lincheck#java-9-support
+        jvmArgs(
+            "--add-opens", "java.base/jdk.internal.misc=ALL-UNNAMED",
+            "--add-exports", "java.base/jdk.internal.util=ALL-UNNAMED"
+        )
+        useJUnitPlatform()
+        testLogging {
+            events("passed", "skipped", "failed")
+        }
     }
 }
